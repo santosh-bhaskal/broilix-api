@@ -9,5 +9,6 @@ const router = express.Router();
 
 router.post("/login", validate(authValidation.loginSchema), authController.login);
 router.post("/signup", validate(authValidation.signupSchema), authController.signup);
+router.post("/reset-password", validate(authValidation.resetPasswordSchema), authController.resetPassword);
 
 export default router;

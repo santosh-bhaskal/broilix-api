@@ -32,6 +32,11 @@ export const remove = asyncHandler(async (req, res) => {
   return res.status(HttpStatus.OK).json(result);
 });
 
+export const getPrepareData = asyncHandler(async (req, res) => {
+  const result = await reportService.getPrepareData();
+  return res.status(HttpStatus.OK).json(result);
+});
+
 export default {
   getAll,
   getById,
@@ -39,4 +44,5 @@ export default {
   update,
   softDelete,
   remove,
+  getPrepareData,
 };

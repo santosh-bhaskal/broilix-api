@@ -18,7 +18,15 @@ export const signupSchema = Joi.object({
   Password: Joi.string().optional(),
 }).or("email", "Email");
 
+export const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().optional(),
+  Email: Joi.string().email().optional(),
+  password: Joi.string().required(),
+  Password: Joi.string().optional(),
+}).or("email", "Email");
+
 export default {
   loginSchema,
   signupSchema,
+  resetPasswordSchema,
 };

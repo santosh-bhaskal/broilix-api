@@ -7,6 +7,7 @@ export const routePrefix = "/FinalReport";
 
 const router = express.Router();
 
+router.get("/prepare", reportController.getPrepareData);
 router.get("/", reportController.getAll);
 router.get("/:id", reportController.getById);
 router.post("/", validate(reportValidation.createFinalReportSchema), reportController.create);

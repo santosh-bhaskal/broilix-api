@@ -21,6 +21,60 @@ export const getAllReports = async () => {
   };
 };
 
+export const getPrepareData = async () => {
+  const batchRepo = getBatchRepo();
+  const activeBatch = await batchRepo.findOne({
+    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+    order: { id: "DESC" },
+  });
+
+  if (!activeBatch) {
+    throw ApiError.notFound("No active batch found.");
+  }
+
+  const batchId = activeBatch.id;
+
+  // Bird Inventory
+  const birdRepo = AppDataSource.getRepository("BirdInventory");
+  const birdInventory = await birdRepo.findOne({
+    where: { batchId, isDeleted: false },
+  });
+
+  // Stock Out Masters
+  const stockOutRepo = AppDataSource.getRepository("StockOutMaster");
+  const stockOuts = await stockOutRepo.find({
+    where: { batchId, isDeleted: false },
+  });
+
+  const totalSoldBirds = stockOuts.reduce((sum, s) => sum + (Number(s.totalBirds) || 0), 0);
+  const totalExportedWeight = stockOuts.reduce((sum, s) => sum + (Number(s.totalWeight) || 0), 0);
+
+  // Feed Inventory
+  const feedRepo = AppDataSource.getRepository("FeedInventory");
+  const feedInventories = await feedRepo.find({
+    where: { batchId, isDeleted: false },
+  });
+
+  const totalFeedBags = feedInventories.reduce((sum, f) => sum + (Number(f.bagsArrivedCount) || 0), 0);
+
+  const prepareData = {
+    id: activeBatch.id,
+    batchNo: activeBatch.batchNo,
+    startDate: birdInventory?.date || activeBatch.startDate,
+    totalHousedBirds: birdInventory?.housedBirdCount || 0,
+    totalSoldBirds,
+    totalExportedWeight,
+    totalFeedBags,
+  };
+
+  return {
+    Message: "Final report prepare data fetched successfully",
+    message: "Final report prepare data fetched successfully",
+    data: prepareData,
+    Data: prepareData,
+  };
+};
+
 export const getReportById = async (idParam) => {
   const id = parseInt(idParam, 10);
   if (!id || isNaN(id)) {

@@ -98,7 +98,38 @@ export const signup = async (body) => {
   };
 };
 
+export const resetPassword = async (body) => {
+  const email = body.email || body.Email;
+  const password = body.password || body.Password;
+
+  logger.info(`Password reset attempt for email: ${email}`);
+
+  if (!email || !password) {
+    throw ApiError.badRequest("Email and password are required.");
+  }
+
+  const userRepo = getUserRepository();
+  const user = await userRepo.findOne({
+    where: { email },
+  });
+
+  if (!user) {
+    logger.warn(`Password reset failed: User with email ${email} not found.`);
+    throw ApiError.notFound("User with this email not found.");
+  }
+
+  user.password = password;
+  await userRepo.save(user);
+  logger.info(`Password updated successfully for email: ${email}`);
+
+  return {
+    Message: "Password updated successfully.",
+    message: "Password updated successfully.",
+  };
+};
+
 export default {
   login,
   signup,
+  resetPassword,
 };

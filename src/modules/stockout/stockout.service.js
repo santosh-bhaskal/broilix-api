@@ -71,6 +71,7 @@ export const createMaster = async () => {
 
   const masterRepo = getMasterRepo();
   const latestMaster = await masterRepo.findOne({
+    where: { batchId: activeBatch.id },
     order: { stockOutNo: "DESC" },
   });
 

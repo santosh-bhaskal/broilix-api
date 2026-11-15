@@ -12,7 +12,13 @@ export const signup = asyncHandler(async (req, res) => {
   return res.status(HttpStatus.OK).json(result);
 });
 
+export const resetPassword = asyncHandler(async (req, res) => {
+  const result = await authService.resetPassword(req.body);
+  return res.status(HttpStatus.OK).json(result);
+});
+
 export default {
   login,
   signup,
+  resetPassword,
 };
