@@ -2,16 +2,34 @@ import { AppDataSource } from "../../core/database/dbConnect.js";
 import { BATCH_STATUS } from "../../core/constants/constants.js";
 import { normalizeToUtc } from "../../core/utils/dateHelper.js";
 import ApiError from "../../core/utils/ApiError.js";
+import { In, IsNull } from "typeorm";
 
 const getBirdRepo = () => AppDataSource.getRepository("BirdInventory");
 const getBatchRepo = () => AppDataSource.getRepository("Batch");
 
-export const getAllBirdInventories = async () => {
+export const getAllBirdInventories = async (userId = null) => {
   const birdRepo = getBirdRepo();
-  const inventories = await birdRepo.find({
-    where: { isDeleted: false },
-    order: { id: "DESC" },
-  });
+  const batchRepo = getBatchRepo();
+
+  let inventories = [];
+  if (userId) {
+    const userBatches = await batchRepo.find({
+      where: [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }],
+      select: ["id"],
+    });
+    const batchIds = userBatches.map((b) => b.id);
+    if (batchIds.length > 0) {
+      inventories = await birdRepo.find({
+        where: { batchId: In(batchIds), isDeleted: false },
+        order: { id: "DESC" },
+      });
+    }
+  } else {
+    inventories = await birdRepo.find({
+      where: { isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
 
   return {
     Message: "Bird inventories fetched successfully",
@@ -44,14 +62,18 @@ export const getBirdInventoryByBatch = async (batchId) => {
   };
 };
 
-export const createBirdInventory = async (body) => {
+export const createBirdInventory = async (body, userId = null) => {
   const batchRepo = getBatchRepo();
-  const existingBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-  });
+  const resolvedUserId = userId ?? body.userId ?? body.UserId ?? null;
+
+  const where = resolvedUserId
+    ? { status: BATCH_STATUS.ONGOING, isDeleted: false, userId: resolvedUserId }
+    : { status: BATCH_STATUS.ONGOING, isDeleted: false };
+
+  const existingBatch = await batchRepo.findOne({ where });
 
   if (existingBatch) {
-    throw ApiError.badRequest("Another batch is already active. Close it before starting a new batch.");
+    throw ApiError.badRequest("Another batch is already active for your account. Close it before starting a new batch.");
   }
 
   const batchNo = body.batchNo ?? body.BatchNo ?? 1;
@@ -64,6 +86,7 @@ export const createBirdInventory = async (body) => {
       startDate: new Date(),
       status: BATCH_STATUS.ONGOING,
       isDeleted: false,
+      userId: resolvedUserId,
     });
     await manager.save(batch);
 

@@ -2,16 +2,33 @@ import { AppDataSource } from "../../core/database/dbConnect.js";
 import { BATCH_STATUS } from "../../core/constants/constants.js";
 import { normalizeToUtc } from "../../core/utils/dateHelper.js";
 import ApiError from "../../core/utils/ApiError.js";
+import { In, IsNull } from "typeorm";
 
 const getReportRepo = () => AppDataSource.getRepository("FinalReport");
 const getBatchRepo = () => AppDataSource.getRepository("Batch");
 
-export const getAllReports = async () => {
+export const getAllReports = async (userId = null) => {
   const reportRepo = getReportRepo();
-  const reports = await reportRepo.find({
-    where: { isDeleted: false },
-    order: { startDate: "DESC", id: "DESC" },
-  });
+  const batchRepo = getBatchRepo();
+  let reports = [];
+  if (userId) {
+    const userBatches = await batchRepo.find({
+      where: [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }],
+      select: ["id"],
+    });
+    const batchIds = userBatches.map((b) => b.id);
+    if (batchIds.length > 0) {
+      reports = await reportRepo.find({
+        where: { batchId: In(batchIds), isDeleted: false },
+        order: { startDate: "DESC", id: "DESC" },
+      });
+    }
+  } else {
+    reports = await reportRepo.find({
+      where: { isDeleted: false },
+      order: { startDate: "DESC", id: "DESC" },
+    });
+  }
 
   return {
     Message: "Final reports fetched successfully",
@@ -21,12 +38,21 @@ export const getAllReports = async () => {
   };
 };
 
-export const getPrepareData = async () => {
+export const getPrepareData = async (userId = null) => {
   const batchRepo = getBatchRepo();
-  const activeBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-    order: { id: "DESC" },
-  });
+  let activeBatch = null;
+  if (userId) {
+    activeBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+  if (!activeBatch) {
+    activeBatch = await batchRepo.findOne({
+      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
 
   if (!activeBatch) {
     throw ApiError.notFound("No active batch found.");
@@ -94,12 +120,21 @@ export const getReportById = async (idParam) => {
   };
 };
 
-export const createReport = async (body) => {
+export const createReport = async (body, userId = null) => {
   const batchRepo = getBatchRepo();
-  const activeBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-    order: { id: "DESC" },
-  });
+  let activeBatch = null;
+  if (userId) {
+    activeBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+  if (!activeBatch) {
+    activeBatch = await batchRepo.findOne({
+      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
 
   if (!activeBatch) {
     throw ApiError.badRequest("No active batch found.");

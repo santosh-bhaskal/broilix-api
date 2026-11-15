@@ -3,8 +3,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import logger from "../core/utils/logger.js";
+import { optionalAuthenticate } from "../core/middlewares/auth.middleware.js";
 
 const apiRouter = express.Router();
+apiRouter.use(optionalAuthenticate);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,21 +1,61 @@
 import { AppDataSource } from "../../core/database/dbConnect.js";
 import { BATCH_STATUS } from "../../core/constants/constants.js";
-import ApiError from "../../core/utils/ApiError.js";
 
 const getBatchRepo = () => AppDataSource.getRepository("Batch");
 const getBirdRepo = () => AppDataSource.getRepository("BirdInventory");
 const getDailyRepo = () => AppDataSource.getRepository("DailyRecord");
 const getFeedRepo = () => AppDataSource.getRepository("FeedInventory");
 
-export const getDashboardData = async () => {
+export const getDashboardData = async (userId = null) => {
   const batchRepo = getBatchRepo();
-  const latestBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-    order: { id: "DESC" },
-  });
 
+  // 1. Try to find active ongoing batch for this specific user
+  let latestBatch = null;
+  if (userId) {
+    latestBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+
+  // 2. Fallback to active ongoing batch where userId is null (shared/legacy batches)
   if (!latestBatch) {
-    throw ApiError.notFound("No active batch found.");
+    latestBatch = await batchRepo.findOne({
+      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+
+  // If no active batch found, return zeroed summary gracefully
+  if (!latestBatch) {
+    return {
+      Message: "No active batch found",
+      message: "No active batch found",
+      Data: {
+        TotalMortality: 0,
+        TotalAliveBirds: 0,
+        TotalFeedConsume: 0,
+        TotalFeedBags: 0,
+        TotalFeedBagsAvailable: 0,
+        totalMortality: 0,
+        totalAliveBirds: 0,
+        totalFeedConsume: 0,
+        totalFeedBags: 0,
+        totalFeedBagsAvailable: 0,
+      },
+      data: {
+        totalMortality: 0,
+        totalAliveBirds: 0,
+        totalFeedConsume: 0,
+        totalFeedBags: 0,
+        totalFeedBagsAvailable: 0,
+        TotalMortality: 0,
+        TotalAliveBirds: 0,
+        TotalFeedConsume: 0,
+        TotalFeedBags: 0,
+        TotalFeedBagsAvailable: 0,
+      },
+    };
   }
 
   const batchId = latestBatch.id;
@@ -25,11 +65,7 @@ export const getDashboardData = async () => {
     where: { batchId, isDeleted: false },
   });
 
-  if (!birdInventory) {
-    throw ApiError.badRequest("Bird arrival not yet recorded for this batch.");
-  }
-
-  const housedBirds = birdInventory.housedBirdCount || 0;
+  const housedBirds = birdInventory?.housedBirdCount || 0;
 
   const dailyRepo = getDailyRepo();
   const dailyRecords = await dailyRepo.find({
@@ -37,7 +73,7 @@ export const getDashboardData = async () => {
   });
 
   const totalMortality = dailyRecords.reduce((acc, curr) => acc + (curr.mortalityCount || 0), 0);
-  const totalAliveBirds = housedBirds - totalMortality;
+  const totalAliveBirds = Math.max(0, housedBirds - totalMortality);
   const totalFeedConsume = dailyRecords.reduce((acc, curr) => acc + (curr.feedConsumedBags || 0), 0);
 
   const feedRepo = getFeedRepo();
@@ -63,6 +99,8 @@ export const getDashboardData = async () => {
       totalFeedConsume,
       totalFeedBags,
       totalFeedBagsAvailable,
+      activeBatchId: batchId,
+      ActiveBatchId: batchId,
     },
     data: {
       totalMortality,
@@ -70,6 +108,14 @@ export const getDashboardData = async () => {
       totalFeedConsume,
       totalFeedBags,
       totalFeedBagsAvailable,
+      activeBatchId: batchId,
+      // PascalCase
+      TotalMortality: totalMortality,
+      TotalAliveBirds: totalAliveBirds,
+      TotalFeedConsume: totalFeedConsume,
+      TotalFeedBags: totalFeedBags,
+      TotalFeedBagsAvailable: totalFeedBagsAvailable,
+      ActiveBatchId: batchId,
     },
   };
 };

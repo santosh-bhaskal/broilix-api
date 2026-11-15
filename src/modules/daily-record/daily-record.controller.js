@@ -1,9 +1,11 @@
 import * as dailyService from "./daily-record.service.js";
 import asyncHandler from "../../core/utils/asyncHandler.js";
 import { HttpStatus } from "../../core/constants/httpStatus.js";
+import { getUserIdFromReq } from "../../core/utils/jwtHelper.js";
 
 export const getAll = asyncHandler(async (req, res) => {
-  const result = await dailyService.getAllDailyRecords();
+  const userId = getUserIdFromReq(req);
+  const result = await dailyService.getAllDailyRecords(userId);
   return res.status(HttpStatus.OK).json(result);
 });
 
@@ -13,7 +15,8 @@ export const getByBatch = asyncHandler(async (req, res) => {
 });
 
 export const create = asyncHandler(async (req, res) => {
-  const result = await dailyService.createDailyRecord(req.body);
+  const userId = getUserIdFromReq(req);
+  const result = await dailyService.createDailyRecord(req.body, userId);
   if (result.status) {
     return res.status(result.status).json(result.body);
   }

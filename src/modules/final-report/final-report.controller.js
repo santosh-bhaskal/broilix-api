@@ -1,9 +1,11 @@
 import * as reportService from "./final-report.service.js";
 import asyncHandler from "../../core/utils/asyncHandler.js";
 import { HttpStatus } from "../../core/constants/httpStatus.js";
+import { getUserIdFromReq } from "../../core/utils/jwtHelper.js";
 
 export const getAll = asyncHandler(async (req, res) => {
-  const result = await reportService.getAllReports();
+  const userId = getUserIdFromReq(req);
+  const result = await reportService.getAllReports(userId);
   return res.status(HttpStatus.OK).json(result);
 });
 
@@ -13,7 +15,8 @@ export const getById = asyncHandler(async (req, res) => {
 });
 
 export const create = asyncHandler(async (req, res) => {
-  const result = await reportService.createReport(req.body);
+  const userId = getUserIdFromReq(req);
+  const result = await reportService.createReport(req.body, userId);
   return res.status(HttpStatus.CREATED).json(result);
 });
 
@@ -33,7 +36,8 @@ export const remove = asyncHandler(async (req, res) => {
 });
 
 export const getPrepareData = asyncHandler(async (req, res) => {
-  const result = await reportService.getPrepareData();
+  const userId = getUserIdFromReq(req);
+  const result = await reportService.getPrepareData(userId);
   return res.status(HttpStatus.OK).json(result);
 });
 

@@ -10,7 +10,7 @@ const envVarsSchema = Joi.object({
   JWT_SECRET: Joi.string().required().description("JWT Secret Key"),
   JWT_ISSUER: Joi.string().default("ALONE"),
   JWT_AUDIENCE: Joi.string().default("ALONE"),
-  JWT_EXPIRES_IN: Joi.string().default("60m"),
+  JWT_EXPIRES_IN: Joi.string().default("30d"),
   LOG_LEVEL: Joi.string().default("info"),
 }).unknown();
 

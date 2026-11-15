@@ -17,15 +17,29 @@ app.use(requestId);
 app.use(
   helmet({
     contentSecurityPolicy: false,
-  })
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
+  }),
 );
 
+// Allow all origins (browsers, mobile Capacitor apps, ngrok tunnels, localhost)
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
-  })
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "ngrok-skip-browser-warning",
+      "Accept",
+      "X-Requested-With",
+      "Origin",
+    ],
+    exposedHeaders: ["*"],
+  }),
 );
+app.options("*", cors());
 
 if (config.nodeEnv === "production") {
   app.use(compression());

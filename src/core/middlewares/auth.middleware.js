@@ -1,4 +1,4 @@
-import { verifyToken } from "../utils/jwtHelper.js";
+import { verifyToken, getUserIdFromReq } from "../utils/jwtHelper.js";
 import ApiError from "../utils/ApiError.js";
 
 export const authenticate = (req, res, next) => {
@@ -19,6 +19,21 @@ export const authenticate = (req, res, next) => {
   } catch (error) {
     return next(ApiError.unauthorized("Invalid or expired token."));
   }
+};
+
+export const optionalAuthenticate = (req, res, next) => {
+  const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+  if (authHeader) {
+    const parts = authHeader.split(" ");
+    if (parts.length === 2 && parts[0].toLowerCase() === "bearer") {
+      try {
+        req.user = verifyToken(parts[1]);
+      } catch (e) {
+        // Ignore invalid token in optional auth
+      }
+    }
+  }
+  next();
 };
 
 export default authenticate;

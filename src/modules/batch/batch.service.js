@@ -1,28 +1,33 @@
 import { AppDataSource } from "../../core/database/dbConnect.js";
 import { BATCH_STATUS } from "../../core/constants/constants.js";
 import ApiError from "../../core/utils/ApiError.js";
+import { IsNull } from "typeorm";
 
 const getBatchRepo = () => AppDataSource.getRepository("Batch");
 
-export const createBatch = async (body) => {
+export const createBatch = async (body, userId = null) => {
   const batchRepo = getBatchRepo();
-  const exists = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-  });
+  const resolvedUserId = userId ?? body.userId ?? body.UserId ?? null;
+
+  // Check if an ongoing batch exists for this user (or globally if no userId)
+  const where = resolvedUserId
+    ? { status: BATCH_STATUS.ONGOING, isDeleted: false, userId: resolvedUserId }
+    : { status: BATCH_STATUS.ONGOING, isDeleted: false };
+
+  const exists = await batchRepo.findOne({ where });
 
   if (exists) {
     throw ApiError.badRequest("Another batch is already active. Close it before adding a new batch.");
   }
 
   const batchNo = body.batchNo ?? body.BatchNo ?? 1;
-  const userId = body.userId ?? body.UserId ?? null;
 
   const newBatch = batchRepo.create({
     batchNo,
     startDate: new Date(),
     status: BATCH_STATUS.ONGOING,
     isDeleted: false,
-    userId,
+    userId: resolvedUserId,
   });
 
   await batchRepo.save(newBatch);
@@ -35,8 +40,19 @@ export const createBatch = async (body) => {
   };
 };
 
-export const getActiveBatch = async () => {
+export const getActiveBatch = async (userId = null) => {
   const batchRepo = getBatchRepo();
+
+  // Try to find user's active batch first
+  if (userId) {
+    const userBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+    if (userBatch) return userBatch;
+  }
+
+  // Fallback to active batch where userId is null
   const batch = await batchRepo.findOne({
     where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
     order: { id: "DESC" },
@@ -72,15 +88,16 @@ export const closeBatch = async (batchId) => {
   batch.endDate = new Date();
 
   await batchRepo.save(batch);
-
   return "Batch closed successfully.";
 };
 
-export const getAllBatches = async () => {
+export const getAllBatches = async (userId = null) => {
   const batchRepo = getBatchRepo();
+  const where = userId
+    ? [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }]
+    : { isDeleted: false };
   const batches = await batchRepo.find({
-    where: { isDeleted: false },
-    relations: ["birdInventory", "feedInventories", "dailyRecords"],
+    where,
     order: { id: "DESC" },
   });
 

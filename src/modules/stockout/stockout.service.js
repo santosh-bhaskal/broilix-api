@@ -8,12 +8,21 @@ const getBatchRepo = () => AppDataSource.getRepository("Batch");
 
 // ----------------- Master Services -----------------
 
-export const getAllMasters = async () => {
+export const getAllMasters = async (userId = null) => {
   const batchRepo = getBatchRepo();
-  const activeBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-    order: { id: "DESC" },
-  });
+  let activeBatch = null;
+  if (userId) {
+    activeBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+  if (!activeBatch) {
+    activeBatch = await batchRepo.findOne({
+      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
 
   if (!activeBatch) {
     return {
@@ -58,12 +67,21 @@ export const getMasterById = async (masterIdParam) => {
   };
 };
 
-export const createMaster = async () => {
+export const createMaster = async (userId = null) => {
   const batchRepo = getBatchRepo();
-  const activeBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-    order: { id: "DESC" },
-  });
+  let activeBatch = null;
+  if (userId) {
+    activeBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+  if (!activeBatch) {
+    activeBatch = await batchRepo.findOne({
+      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
 
   if (!activeBatch) {
     throw ApiError.badRequest("No active batch found.");

@@ -6,12 +6,21 @@ import ApiError from "../../core/utils/ApiError.js";
 const getFeedRepo = () => AppDataSource.getRepository("FeedInventory");
 const getBatchRepo = () => AppDataSource.getRepository("Batch");
 
-export const getAllFeedInventories = async () => {
+export const getAllFeedInventories = async (userId = null) => {
   const batchRepo = getBatchRepo();
-  const activeBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-    order: { id: "DESC" },
-  });
+  let activeBatch = null;
+  if (userId) {
+    activeBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+  if (!activeBatch) {
+    activeBatch = await batchRepo.findOne({
+      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
 
   if (!activeBatch) {
     return {
@@ -36,12 +45,21 @@ export const getAllFeedInventories = async () => {
   };
 };
 
-export const createFeedInventory = async (body) => {
+export const createFeedInventory = async (body, userId = null) => {
   const batchRepo = getBatchRepo();
-  const activeBatch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-    order: { id: "DESC" },
-  });
+  let activeBatch = null;
+  if (userId) {
+    activeBatch = await batchRepo.findOne({
+      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
+  if (!activeBatch) {
+    activeBatch = await batchRepo.findOne({
+      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      order: { id: "DESC" },
+    });
+  }
 
   if (!activeBatch) {
     throw ApiError.badRequest("No active batch found.");

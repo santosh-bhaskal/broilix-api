@@ -1,10 +1,12 @@
 import * as stockoutService from "./stockout.service.js";
 import asyncHandler from "../../core/utils/asyncHandler.js";
 import { HttpStatus } from "../../core/constants/httpStatus.js";
+import { getUserIdFromReq } from "../../core/utils/jwtHelper.js";
 
 // Master Controllers
 export const getAllMasters = asyncHandler(async (req, res) => {
-  const result = await stockoutService.getAllMasters();
+  const userId = getUserIdFromReq(req);
+  const result = await stockoutService.getAllMasters(userId);
   return res.status(HttpStatus.OK).json(result);
 });
 
@@ -14,7 +16,8 @@ export const getMasterById = asyncHandler(async (req, res) => {
 });
 
 export const createMaster = asyncHandler(async (req, res) => {
-  const result = await stockoutService.createMaster();
+  const userId = getUserIdFromReq(req);
+  const result = await stockoutService.createMaster(userId);
   return res.status(HttpStatus.OK).json(result);
 });
 
