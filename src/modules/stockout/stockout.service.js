@@ -52,7 +52,7 @@ export const getMasterById = async (masterIdParam) => {
   const masterRepo = getMasterRepo();
   const record = await masterRepo.findOne({
     where: { id: masterId, isDeleted: false },
-    relations: ["entries"],
+    relations: { entries: true },
   });
 
   return {
