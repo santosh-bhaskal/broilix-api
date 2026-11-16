@@ -15,7 +15,7 @@ export const getAllBirdInventories = async (userId = null) => {
   if (userId) {
     const userBatches = await batchRepo.find({
       where: [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }],
-      select: ["id"],
+      select: { id: true },
     });
     const batchIds = userBatches.map((b) => b.id);
     if (batchIds.length > 0) {
