@@ -24,10 +24,8 @@ export const getAllFeedInventories = async (userId = null) => {
 
   if (!activeBatch) {
     return {
-      Message: "Feed inventories fetched successfully",
-      data: [],
       message: "Feed inventories fetched successfully",
-      Data: [],
+      data: [],
     };
   }
 
@@ -38,10 +36,8 @@ export const getAllFeedInventories = async (userId = null) => {
   });
 
   return {
-    Message: "Feed inventories fetched successfully",
-    data: inventory,
     message: "Feed inventories fetched successfully",
-    Data: inventory,
+    data: inventory,
   };
 };
 
@@ -85,10 +81,8 @@ export const createFeedInventory = async (body, userId = null) => {
   await feedRepo.save(record);
 
   return {
-    Message: "Feed inventory record added successfully.",
-    Record: record,
     message: "Feed inventory record added successfully.",
-    record,
+    data: record,
   };
 };
 
@@ -124,7 +118,6 @@ export const updateFeedInventory = async (idParam, body) => {
   await feedRepo.save(existing);
 
   return {
-    Message: "Feed inventory record updated successfully.",
     message: "Feed inventory record updated successfully.",
   };
 };
@@ -143,8 +136,6 @@ export const softDeleteFeedInventory = async (idParam) => {
   }
 
   return {
-    Message: "Record soft-deleted successfully.",
-    UpdatedRecords: result.affected,
     message: "Record soft-deleted successfully.",
     updatedRecords: result.affected,
   };
@@ -164,8 +155,6 @@ export const deleteFeedInventory = async (idParam) => {
   }
 
   return {
-    Message: "Record permanently deleted successfully.",
-    DeletedRecords: result.affected,
     message: "Record permanently deleted successfully.",
     deletedRecords: result.affected,
   };

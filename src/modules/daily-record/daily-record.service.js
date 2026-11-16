@@ -26,8 +26,6 @@ export const getAllDailyRecords = async (userId = null) => {
 
   if (!activeBatch) {
     return {
-      Message: "Daily records fetched successfully",
-      Data: [],
       message: "Daily records fetched successfully",
       data: [],
     };
@@ -40,8 +38,6 @@ export const getAllDailyRecords = async (userId = null) => {
   });
 
   return {
-    Message: "Daily records fetched successfully",
-    Data: records,
     message: "Daily records fetched successfully",
     data: records,
   };
@@ -60,8 +56,6 @@ export const getDailyRecordsByBatch = async (batchIdParam) => {
   });
 
   return {
-    Message: "Daily records fetched successfully",
-    Data: records,
     message: "Daily records fetched successfully",
     data: records,
   };
@@ -111,8 +105,7 @@ export const createDailyRecord = async (body, userId = null) => {
     return {
       status: 400,
       body: {
-        Message: "Not enough feed bags available.",
-        FeedBalance: feedBalance,
+        message: "Not enough feed bags available.",
         feedBalance,
       },
     };
@@ -122,9 +115,8 @@ export const createDailyRecord = async (body, userId = null) => {
     return {
       status: 400,
       body: {
-        Message: "Mortality count can't be greater than ttotal birds.",
+        message: "Mortality count can't be greater than total birds.",
         birdBalance,
-        BirdBalance: birdBalance,
       },
     };
   }
@@ -144,10 +136,8 @@ export const createDailyRecord = async (body, userId = null) => {
   return {
     status: 200,
     body: {
-      Message: "Daily record added successfully.",
       message: "Daily record added successfully.",
-      Record: record,
-      record,
+      data: record,
     },
   };
 };
@@ -181,7 +171,6 @@ export const updateDailyRecord = async (idParam, body) => {
   await dailyRepo.save(existing);
 
   return {
-    Message: "Record updated successfully.",
     message: "Record updated successfully.",
   };
 };
@@ -200,8 +189,6 @@ export const softDeleteDailyRecord = async (idParam) => {
   }
 
   return {
-    Message: "Record soft-deleted successfully.",
-    UpdatedRecords: result.affected,
     message: "Record soft-deleted successfully.",
     updatedRecords: result.affected,
   };
@@ -221,8 +208,6 @@ export const deleteDailyRecord = async (idParam) => {
   }
 
   return {
-    Message: "Record permanently deleted successfully.",
-    DeletedRecords: result.affected,
     message: "Record permanently deleted successfully.",
     deletedRecords: result.affected,
   };

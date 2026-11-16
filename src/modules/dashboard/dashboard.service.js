@@ -29,31 +29,14 @@ export const getDashboardData = async (userId = null) => {
   // If no active batch found, return zeroed summary gracefully
   if (!latestBatch) {
     return {
-      Message: "No active batch found",
       message: "No active batch found",
-      Data: {
-        TotalMortality: 0,
-        TotalAliveBirds: 0,
-        TotalFeedConsume: 0,
-        TotalFeedBags: 0,
-        TotalFeedBagsAvailable: 0,
-        totalMortality: 0,
-        totalAliveBirds: 0,
-        totalFeedConsume: 0,
-        totalFeedBags: 0,
-        totalFeedBagsAvailable: 0,
-      },
       data: {
         totalMortality: 0,
         totalAliveBirds: 0,
         totalFeedConsume: 0,
         totalFeedBags: 0,
         totalFeedBagsAvailable: 0,
-        TotalMortality: 0,
-        TotalAliveBirds: 0,
-        TotalFeedConsume: 0,
-        TotalFeedBags: 0,
-        TotalFeedBagsAvailable: 0,
+        activeBatchId: null,
       },
     };
   }
@@ -85,23 +68,7 @@ export const getDashboardData = async (userId = null) => {
   const totalFeedBagsAvailable = totalFeedBags - totalFeedConsume;
 
   return {
-    Message: "Dashboard fetched successfully",
     message: "Dashboard fetched successfully",
-    Data: {
-      TotalMortality: totalMortality,
-      TotalAliveBirds: totalAliveBirds,
-      TotalFeedConsume: totalFeedConsume,
-      TotalFeedBags: totalFeedBags,
-      TotalFeedBagsAvailable: totalFeedBagsAvailable,
-      // camelCase
-      totalMortality,
-      totalAliveBirds,
-      totalFeedConsume,
-      totalFeedBags,
-      totalFeedBagsAvailable,
-      activeBatchId: batchId,
-      ActiveBatchId: batchId,
-    },
     data: {
       totalMortality,
       totalAliveBirds,
@@ -109,13 +76,6 @@ export const getDashboardData = async (userId = null) => {
       totalFeedBags,
       totalFeedBagsAvailable,
       activeBatchId: batchId,
-      // PascalCase
-      TotalMortality: totalMortality,
-      TotalAliveBirds: totalAliveBirds,
-      TotalFeedConsume: totalFeedConsume,
-      TotalFeedBags: totalFeedBags,
-      TotalFeedBagsAvailable: totalFeedBagsAvailable,
-      ActiveBatchId: batchId,
     },
   };
 };

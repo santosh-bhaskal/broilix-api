@@ -26,8 +26,6 @@ export const getAllMasters = async (userId = null) => {
 
   if (!activeBatch) {
     return {
-      Message: "No active batch found.",
-      Data: [],
       message: "No active batch found.",
       data: [],
     };
@@ -40,8 +38,6 @@ export const getAllMasters = async (userId = null) => {
   });
 
   return {
-    Message: "Stock Out masters fetched successfully",
-    Data: records,
     message: "Stock Out masters fetched successfully",
     data: records,
   };
@@ -60,8 +56,6 @@ export const getMasterById = async (masterIdParam) => {
   });
 
   return {
-    Message: "Stock Out masters fetched successfully",
-    Data: record,
     message: "Stock Out masters fetched successfully",
     data: record,
   };

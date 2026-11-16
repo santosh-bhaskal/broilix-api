@@ -32,10 +32,8 @@ export const getAllBirdInventories = async (userId = null) => {
   }
 
   return {
-    Message: "Bird inventories fetched successfully",
-    data: inventories,
     message: "Bird inventories fetched successfully",
-    Data: inventories,
+    data: inventories,
   };
 };
 
@@ -55,8 +53,6 @@ export const getBirdInventoryByBatch = async (batchId) => {
   }
 
   return {
-    Message: "Bird Inventory found successfully",
-    Data: inv,
     message: "Bird Inventory found successfully",
     data: inv,
   };
@@ -108,14 +104,6 @@ export const createBirdInventory = async (body, userId = null) => {
     await manager.save(newInventory);
 
     return {
-      Message: "Record created successfully",
-      Data: {
-        Id: newInventory.id,
-        BatchId: newInventory.batchId,
-        Date: newInventory.date,
-        HousedBirdCount: newInventory.housedBirdCount,
-        TotalBirdCount: newInventory.totalBirdCount,
-      },
       message: "Record created successfully",
       data: {
         id: newInventory.id,
@@ -183,8 +171,6 @@ export const updateBirdInventory = async (idParam, body) => {
   await birdRepo.save(existing);
 
   return {
-    Message: "Record updated successfully",
-    UpdatedRows: 1,
     message: "Record updated successfully",
     updatedRows: 1,
   };
@@ -204,8 +190,6 @@ export const softDeleteBirdInventory = async (idParam) => {
   }
 
   return {
-    Message: "Record soft-deleted successfully",
-    UpdatedRecords: result.affected,
     message: "Record soft-deleted successfully",
     updatedRecords: result.affected,
   };
@@ -225,8 +209,6 @@ export const deleteBirdInventory = async (idParam) => {
   }
 
   return {
-    Message: "Record permanently deleted successfully",
-    DeletedRecords: result.affected,
     message: "Record permanently deleted successfully",
     deletedRecords: result.affected,
   };

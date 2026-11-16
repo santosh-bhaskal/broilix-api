@@ -32,14 +32,7 @@ export const login = async (body) => {
   const fullName = `${user.firstName || ""}${user.lastName || ""}`;
 
   return {
-    Message: "Login successful",
-    Token: token,
-    User: {
-      Id: user.id,
-      Name: fullName,
-      Email: user.email,
-    },
-    // Also include camelCase for modern JS clients
+    message: "Login successful",
     token,
     user: {
       id: user.id,
@@ -84,12 +77,7 @@ export const signup = async (body) => {
   const fullName = `${user.firstName || ""}${user.lastName || ""}`;
 
   return {
-    Message: "User signed up successfully.",
-    Data: {
-      Id: user.id,
-      Name: fullName,
-      Email: user.email,
-    },
+    message: "User signed up successfully.",
     data: {
       id: user.id,
       name: fullName,
@@ -123,7 +111,6 @@ export const resetPassword = async (body) => {
   logger.info(`Password updated successfully for email: ${email}`);
 
   return {
-    Message: "Password updated successfully.",
     message: "Password updated successfully.",
   };
 };

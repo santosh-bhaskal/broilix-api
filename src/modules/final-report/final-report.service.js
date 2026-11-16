@@ -31,10 +31,8 @@ export const getAllReports = async (userId = null) => {
   }
 
   return {
-    Message: "Final reports fetched successfully",
-    data: reports,
     message: "Final reports fetched successfully",
-    Data: reports,
+    data: reports,
   };
 };
 
@@ -94,10 +92,8 @@ export const getPrepareData = async (userId = null) => {
   };
 
   return {
-    Message: "Final report prepare data fetched successfully",
     message: "Final report prepare data fetched successfully",
     data: prepareData,
-    Data: prepareData,
   };
 };
 
@@ -113,10 +109,8 @@ export const getReportById = async (idParam) => {
   });
 
   return {
-    Message: "Final reports fetched successfully",
-    data: report,
     message: "Final reports fetched successfully",
-    Data: report,
+    data: report,
   };
 };
 
@@ -174,8 +168,6 @@ export const createReport = async (body, userId = null) => {
   await reportRepo.save(record);
 
   return {
-    Message: "Final report created successfully.",
-    Data: record,
     message: "Final report created successfully.",
     data: record,
   };
@@ -269,7 +261,6 @@ export const updateReport = async (idParam, body) => {
   await reportRepo.save(existing);
 
   return {
-    Message: "Final report updated successfully.",
     message: "Final report updated successfully.",
   };
 };
@@ -288,7 +279,6 @@ export const softDeleteReport = async (idParam) => {
   }
 
   return {
-    Message: "Record soft deleted successfully.",
     message: "Record soft deleted successfully.",
   };
 };
@@ -307,8 +297,6 @@ export const deleteReport = async (idParam) => {
   }
 
   return {
-    Message: "Record permanently deleted successfully.",
-    DeletedRecords: result.affected,
     message: "Record permanently deleted successfully.",
     deletedRecords: result.affected,
   };

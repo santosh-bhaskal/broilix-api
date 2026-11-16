@@ -3,15 +3,14 @@ import config from "../config/env.config.js";
 export const successResponse = (
   res,
   message,
-  data = {},
+  data = undefined,
   statusCode = 200,
   extra = {}
 ) => {
   const response = {
     success: true,
     message,
-    Message: message,
-    ...(data !== undefined && { data, Data: data }),
+    ...(data !== undefined && { data }),
     ...extra,
   };
 
@@ -31,7 +30,6 @@ export const errorResponse = (
   const response = {
     success: false,
     message,
-    Message: message,
     error,
   };
 
@@ -59,7 +57,6 @@ export const validationErrorResponse = (res, errors) => {
   const response = {
     success: false,
     message: `Validation failed - ${formattedErrors[0]?.message || 'Invalid input'}`,
-    Message: `Validation failed - ${formattedErrors[0]?.message || 'Invalid input'}`,
     errors: formattedErrors,
   };
 

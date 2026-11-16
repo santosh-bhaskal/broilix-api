@@ -34,9 +34,7 @@ export const createBatch = async (body, userId = null) => {
 
   return {
     message: "Batch created",
-    Message: "Batch created",
     data: newBatch,
-    Data: newBatch,
   };
 };
 
