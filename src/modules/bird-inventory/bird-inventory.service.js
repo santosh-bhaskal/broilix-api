@@ -83,7 +83,9 @@ export const createBirdInventory = async (body, userId = null) => {
       isDeleted: false,
       userId: resolvedUserId,
     });
-    await manager.save(batch);
+    // `EntitySchema` entities are plain objects, so EntityManager needs the
+    // target to determine which metadata/table to persist in a transaction.
+    await manager.save("Batch", batch);
 
     const newInventory = manager.create("BirdInventory", {
       batchId: batch.id,
@@ -100,7 +102,7 @@ export const createBirdInventory = async (body, userId = null) => {
       housedBirdCount: body.housedBirdCount ?? body.HousedBirdCount ?? 0,
       isDeleted: false,
     });
-    await manager.save(newInventory);
+    await manager.save("BirdInventory", newInventory);
 
     return {
       message: "Record created successfully",
