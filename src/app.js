@@ -7,6 +7,7 @@ import compression from "compression";
 import { requestId } from "./core/middlewares/requestId.js";
 import handleError from "./core/middlewares/error.middleware.js";
 import config from "./core/config/env.config.js";
+import connectDB from "./core/database/dbConnect.js";
 import apiRouter from "./routes/index.js";
 
 const app = express();
@@ -65,6 +66,16 @@ app.get("/health", (_, res) => {
     service: "poultry-api",
     timestamp: new Date().toISOString(),
   });
+});
+
+// Ensure database is connected (essential for serverless deployments like Vercel)
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Mount modular API router
