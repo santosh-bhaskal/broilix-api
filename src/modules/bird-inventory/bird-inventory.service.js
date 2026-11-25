@@ -14,7 +14,10 @@ export const getAllBirdInventories = async (userId = null) => {
   let inventories = [];
   if (userId) {
     const userBatches = await batchRepo.find({
-      where: [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }],
+      where: [
+        { userId, isDeleted: false },
+        { isDeleted: false, userId: IsNull() },
+      ],
     });
     const batchIds = userBatches.map((b) => b.id);
     if (batchIds.length > 0) {
@@ -68,17 +71,33 @@ export const createBirdInventory = async (body, userId = null) => {
   const existingBatch = await batchRepo.findOne({ where });
 
   if (existingBatch) {
-    throw ApiError.badRequest("Another batch is already active for your account. Close it before starting a new batch.");
+    throw ApiError.badRequest(
+      "Another batch is already active for your account. Close it before starting a new batch.",
+    );
   }
 
-  const batchNo = body.batchNo ?? body.BatchNo ?? 1;
+  // Auto-generate next batchNo if not passed
+  let batchNo = body.batchNo ?? body.BatchNo;
+  if (!batchNo || isNaN(Number(batchNo))) {
+    const lastBatchWhere = resolvedUserId
+      ? [{ userId: resolvedUserId }, { userId: IsNull() }]
+      : {};
+    const lastBatch = await batchRepo.findOne({
+      where: lastBatchWhere,
+      order: { id: "DESC" },
+    });
+    batchNo = lastBatch?.batchNo ? Number(lastBatch.batchNo) + 1 : 1;
+  } else {
+    batchNo = Number(batchNo);
+  }
+
   const date = normalizeToUtc(body.date ?? body.Date);
 
   // TypeORM transaction
   return await AppDataSource.transaction(async (manager) => {
     const batch = manager.create("Batch", {
       batchNo,
-      startDate: new Date(),
+      startDate: date || new Date(),
       status: BATCH_STATUS.ONGOING,
       isDeleted: false,
       userId: resolvedUserId,

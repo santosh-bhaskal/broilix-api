@@ -35,10 +35,23 @@ export const getAllReports = async (userId = null) => {
   };
 };
 
-export const getPrepareData = async (userId = null) => {
+export const getPrepareData = async (userId = null, batchIdParam = null) => {
   const batchRepo = getBatchRepo();
   let activeBatch = null;
-  if (userId) {
+
+  if (batchIdParam) {
+    activeBatch = await batchRepo.findOne({
+      where: { id: Number(batchIdParam), isDeleted: false },
+    });
+    if (!activeBatch) {
+      activeBatch = await batchRepo.findOne({
+        where: { batchNo: Number(batchIdParam), isDeleted: false },
+        order: { id: "DESC" },
+      });
+    }
+  }
+
+  if (!activeBatch && userId) {
     activeBatch = await batchRepo.findOne({
       where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
       order: { id: "DESC" },
@@ -51,8 +64,23 @@ export const getPrepareData = async (userId = null) => {
     });
   }
 
+  // Fallback: If no ONGOING batch, retrieve the most recent active batch
   if (!activeBatch) {
-    throw ApiError.notFound("No active batch found.");
+    if (userId) {
+      activeBatch = await batchRepo.findOne({
+        where: [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }],
+        order: { id: "DESC" },
+      });
+    } else {
+      activeBatch = await batchRepo.findOne({
+        where: { isDeleted: false },
+        order: { id: "DESC" },
+      });
+    }
+  }
+
+  if (!activeBatch) {
+    throw ApiError.notFound("No batch found.");
   }
 
   const batchId = activeBatch.id;
@@ -60,22 +88,42 @@ export const getPrepareData = async (userId = null) => {
   // Bird Inventory
   const birdRepo = AppDataSource.getRepository("BirdInventory");
   const birdInventory = await birdRepo.findOne({
-    where: { batchId, isDeleted: false },
+    where: [{ batchId, isDeleted: false }, { batchId, isDeleted: IsNull() }],
+    order: { id: "DESC" },
   });
 
-  // Stock Out Masters
+  // Stock Out Masters with entries (from checkout)
   const stockOutRepo = AppDataSource.getRepository("StockOutMaster");
   const stockOuts = await stockOutRepo.find({
-    where: { batchId, isDeleted: false },
+    where: [{ batchId, isDeleted: false }, { batchId, isDeleted: IsNull() }],
+    relations: { entries: true },
   });
 
-  const totalSoldBirds = stockOuts.reduce((sum, s) => sum + (Number(s.totalBirds) || 0), 0);
-  const totalExportedWeight = stockOuts.reduce((sum, s) => sum + (Number(s.totalWeight) || 0), 0);
+  const masterIds = stockOuts.map((s) => s.id);
+  let allEntries = [];
+  if (masterIds.length > 0) {
+    const entryRepo = AppDataSource.getRepository("StockOutEntry");
+    allEntries = await entryRepo.find({
+      where: { stockOutMasterId: In(masterIds) },
+    });
+  }
+
+  // Calculate sold birds & checkout weights directly
+  const entriesSoldBirds = allEntries.reduce((sum, e) => sum + (Number(e.birds) || 0), 0);
+  const entriesWeight = allEntries.reduce((sum, e) => sum + (Number(e.weight) || 0), 0);
+
+  const mastersSoldBirds = stockOuts.reduce((sum, s) => sum + (Number(s.totalBirds) || 0), 0);
+  const mastersWeight = stockOuts.reduce((sum, s) => sum + (Number(s.totalWeight) || 0), 0);
+
+  const totalSoldBirds = entriesSoldBirds > 0 ? entriesSoldBirds : mastersSoldBirds;
+  const totalExportedWeight = entriesWeight > 0
+    ? Number(entriesWeight.toFixed(2))
+    : Number(mastersWeight.toFixed(2));
 
   // Feed Inventory
   const feedRepo = AppDataSource.getRepository("FeedInventory");
   const feedInventories = await feedRepo.find({
-    where: { batchId, isDeleted: false },
+    where: [{ batchId, isDeleted: false }, { batchId, isDeleted: IsNull() }],
   });
 
   const totalFeedBags = feedInventories.reduce((sum, f) => sum + (Number(f.bagsArrivedCount) || 0), 0);
@@ -84,7 +132,7 @@ export const getPrepareData = async (userId = null) => {
     id: activeBatch.id,
     batchNo: activeBatch.batchNo,
     startDate: birdInventory?.date || activeBatch.startDate,
-    totalHousedBirds: birdInventory?.housedBirdCount || 0,
+    totalHousedBirds: Number(birdInventory?.housedBirdCount || birdInventory?.totalBirdCount || birdInventory?.birdsArrivedCount) || 0,
     totalSoldBirds,
     totalExportedWeight,
     totalFeedBags,
@@ -116,7 +164,21 @@ export const getReportById = async (idParam) => {
 export const createReport = async (body, userId = null) => {
   const batchRepo = getBatchRepo();
   let activeBatch = null;
-  if (userId) {
+
+  const requestedBatchId = body.batchId ?? body.BatchId;
+  if (requestedBatchId) {
+    activeBatch = await batchRepo.findOne({
+      where: { id: Number(requestedBatchId), isDeleted: false },
+    });
+    if (!activeBatch) {
+      activeBatch = await batchRepo.findOne({
+        where: { batchNo: Number(requestedBatchId), isDeleted: false },
+        order: { id: "DESC" },
+      });
+    }
+  }
+
+  if (!activeBatch && userId) {
     activeBatch = await batchRepo.findOne({
       where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
       order: { id: "DESC" },
@@ -130,7 +192,7 @@ export const createReport = async (body, userId = null) => {
   }
 
   if (!activeBatch) {
-    throw ApiError.badRequest("No active batch found.");
+    throw ApiError.badRequest("No batch found to settle.");
   }
 
   const batchId = activeBatch.id;
@@ -138,8 +200,8 @@ export const createReport = async (body, userId = null) => {
 
   const record = reportRepo.create({
     batchId,
-    startDate: normalizeToUtc(body.startDate ?? body.StartDate),
-    endDate: normalizeToUtc(body.endDate ?? body.EndDate),
+    startDate: normalizeToUtc(body.startDate ?? body.StartDate ?? activeBatch.startDate),
+    endDate: normalizeToUtc(body.endDate ?? body.EndDate ?? new Date()),
     totalBirds: body.totalBirds ?? body.TotalBirds ?? 0,
     birdRate: body.birdRate ?? body.BirdRate ?? 0,
     birdCost: body.birdCost ?? body.BirdCost ?? 0,
@@ -166,8 +228,13 @@ export const createReport = async (body, userId = null) => {
 
   await reportRepo.save(record);
 
+  // Mark the batch as COMPLETED
+  activeBatch.status = BATCH_STATUS.COMPLETED;
+  activeBatch.endDate = record.endDate || new Date();
+  await batchRepo.save(activeBatch);
+
   return {
-    message: "Final report created successfully.",
+    message: "Final report created successfully and batch marked as completed.",
     data: record,
   };
 };

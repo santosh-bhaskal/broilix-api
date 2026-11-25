@@ -37,7 +37,7 @@ export const remove = asyncHandler(async (req, res) => {
 
 export const getPrepareData = asyncHandler(async (req, res) => {
   const userId = getUserIdFromReq(req);
-  const result = await reportService.getPrepareData(userId);
+  const result = await reportService.getPrepareData(userId, req.query?.batchId);
   return res.status(HttpStatus.OK).json(result);
 });
 

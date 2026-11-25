@@ -20,7 +20,20 @@ export const createBatch = async (body, userId = null) => {
     throw ApiError.badRequest("Another batch is already active. Close it before adding a new batch.");
   }
 
-  const batchNo = body.batchNo ?? body.BatchNo ?? 1;
+  // Auto-generate next batchNo if not passed
+  let batchNo = body.batchNo ?? body.BatchNo;
+  if (!batchNo || isNaN(Number(batchNo))) {
+    const lastBatchWhere = resolvedUserId
+      ? [{ userId: resolvedUserId }, { userId: IsNull() }]
+      : {};
+    const lastBatch = await batchRepo.findOne({
+      where: lastBatchWhere,
+      order: { id: "DESC" },
+    });
+    batchNo = lastBatch?.batchNo ? Number(lastBatch.batchNo) + 1 : 1;
+  } else {
+    batchNo = Number(batchNo);
+  }
 
   const newBatch = batchRepo.create({
     batchNo,

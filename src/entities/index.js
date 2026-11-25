@@ -6,6 +6,7 @@ import { FeedInventoryEntity } from "./FeedInventory.entity.js";
 import { FinalReportEntity } from "./FinalReport.entity.js";
 import { StockOutMasterEntity } from "./StockOutMaster.entity.js";
 import { StockOutEntryEntity } from "./StockOutEntry.entity.js";
+import { PushTokenEntity } from "./PushToken.entity.js";
 
 export const entities = [
   UserEntity,
@@ -16,6 +17,7 @@ export const entities = [
   FinalReportEntity,
   StockOutMasterEntity,
   StockOutEntryEntity,
+  PushTokenEntity,
 ];
 
 export {
@@ -27,4 +29,5 @@ export {
   FinalReportEntity,
   StockOutMasterEntity,
   StockOutEntryEntity,
+  PushTokenEntity,
 };

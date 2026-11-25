@@ -17,7 +17,7 @@ export const getMasterById = asyncHandler(async (req, res) => {
 
 export const createMaster = asyncHandler(async (req, res) => {
   const userId = getUserIdFromReq(req);
-  const result = await stockoutService.createMaster(userId);
+  const result = await stockoutService.createMaster(userId, req.body);
   return res.status(HttpStatus.OK).json(result);
 });
 
@@ -47,6 +47,11 @@ export const deleteEntry = asyncHandler(async (req, res) => {
   return res.status(HttpStatus.OK).send(result);
 });
 
+export const softDeleteMaster = asyncHandler(async (req, res) => {
+  const result = await stockoutService.softDeleteMaster(req.params.id);
+  return res.status(HttpStatus.OK).json(result);
+});
+
 export default {
   getAllMasters,
   getMasterById,
@@ -56,4 +61,5 @@ export default {
   getEntriesByMaster,
   editEntry,
   deleteEntry,
+  softDeleteMaster,
 };

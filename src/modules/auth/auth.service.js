@@ -6,8 +6,8 @@ import logger from "../../core/utils/logger.js";
 const getUserRepository = () => AppDataSource.getRepository("User");
 
 export const login = async (body) => {
-  const email = body.email || body.Email;
-  const password = body.password || body.Password;
+  const email = body.email;
+  const password = body.password;
 
   logger.info(`Login attempt for email: ${email}`);
 
@@ -29,13 +29,15 @@ export const login = async (body) => {
   const token = generateToken(user);
   logger.info(`Login successful for email: ${email}`);
 
-  const fullName = `${user.firstName || ""}${user.lastName || ""}`;
+  const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
 
   return {
     message: "Login successful",
     token,
     user: {
       id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       name: fullName,
       email: user.email,
     },
@@ -43,15 +45,15 @@ export const login = async (body) => {
 };
 
 export const signup = async (body) => {
-  const firstName = body.firstName || body.FirstName || "";
-  const lastName = body.lastName || body.LastName || "";
-  const email = body.email || body.Email;
-  const password = body.password || body.Password;
+  const firstName = (body.firstName || "").trim();
+  const lastName = (body.lastName || "").trim();
+  const email = body.email;
+  const password = body.password;
 
   logger.info(`SignUp attempt for email: ${email}`);
 
-  if (!email || !password) {
-    throw ApiError.badRequest("Invalid request data.");
+  if (!firstName || !lastName || !email || !password) {
+    throw ApiError.badRequest("First name, last name, email, and password are required.");
   }
 
   const userRepo = getUserRepository();
@@ -74,12 +76,14 @@ export const signup = async (body) => {
   await userRepo.save(user);
   logger.info(`User signed up successfully: ${email}`);
 
-  const fullName = `${user.firstName || ""}${user.lastName || ""}`;
+  const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
 
   return {
     message: "User signed up successfully.",
     data: {
       id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       name: fullName,
       email: user.email,
     },

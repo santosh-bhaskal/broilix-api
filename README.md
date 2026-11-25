@@ -94,6 +94,13 @@ npm start
 - `POST /api/Auth/login` - User login with JWT generation
 - `POST /api/Auth/signup` - User registration
 
+### Push Notifications (`/api/Notifications`) [Requires Bearer Token]
+- `POST /api/Notifications/push-token` - Store the signed-in device's Expo push token
+- `DELETE /api/Notifications/push-token` - Remove a token on logout
+- `POST /api/Notifications/test` - Send a test notification to the signed-in user's registered devices
+
+Run `database/migrations/20261121_create_push_tokens.sql` against PostgreSQL before using these endpoints. Set `EXPO_ACCESS_TOKEN` only if Expo Push Security is enabled.
+
 ### 📦 Batch (`/api/Batch` or `/api/batch`)
 - `GET /api/Batch` - Fetch all batches with inventories & records
 - `GET /api/Batch/active` - Get the currently active/ongoing batch

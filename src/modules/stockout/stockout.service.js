@@ -61,7 +61,7 @@ export const getMasterById = async (masterIdParam) => {
   };
 };
 
-export const createMaster = async (userId = null) => {
+export const createMaster = async (userId = null, body = {}) => {
   const batchRepo = getBatchRepo();
   let activeBatch = null;
   if (userId) {
@@ -89,8 +89,11 @@ export const createMaster = async (userId = null) => {
 
   const nextStockOutNo = (latestMaster?.stockOutNo || 0) + 1;
 
+  const rawDate = body?.date || body?.Date;
+  const parsedDate = rawDate ? new Date(rawDate) : new Date();
+
   const master = masterRepo.create({
-    date: new Date(),
+    date: isNaN(parsedDate.getTime()) ? new Date() : parsedDate,
     batchId: activeBatch.id,
     stockOutNo: nextStockOutNo,
     totalBirds: 0,
@@ -121,6 +124,14 @@ export const finalizeMaster = async (idParam, body) => {
 
   if (!master) {
     throw ApiError.notFound("Master record not found.");
+  }
+
+  if (body.date || body.Date) {
+    const rawDate = body.date || body.Date;
+    const parsedDate = new Date(rawDate);
+    if (!isNaN(parsedDate.getTime())) {
+      master.date = parsedDate;
+    }
   }
 
   master.totalBirds = body.totalBirds ?? body.TotalBirds ?? master.totalBirds;
@@ -237,6 +248,24 @@ export const deleteEntry = async (idParam) => {
   return "Entry deleted!";
 };
 
+export const softDeleteMaster = async (idParam) => {
+  const id = parseInt(idParam, 10);
+  if (!id || isNaN(id)) {
+    throw ApiError.badRequest("Invalid Stock Out Master ID");
+  }
+
+  const masterRepo = getMasterRepo();
+  const result = await masterRepo.update({ id, isDeleted: false }, { isDeleted: true });
+  if (!result.affected) {
+    throw ApiError.notFound("Stock Out record not found or already deleted");
+  }
+
+  return {
+    message: "Stock Out record soft-deleted successfully",
+    updatedRecords: result.affected,
+  };
+};
+
 export default {
   getAllMasters,
   getMasterById,
@@ -246,4 +275,5 @@ export default {
   getEntriesByMaster,
   editEntry,
   deleteEntry,
+  softDeleteMaster,
 };

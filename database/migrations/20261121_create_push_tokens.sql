@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS "tbl_pushToken" (
+  "Id" SERIAL PRIMARY KEY,
+  "UserId" INTEGER NOT NULL REFERENCES "tbl_user"("Id") ON DELETE CASCADE,
+  "Token" TEXT NOT NULL UNIQUE,
+  "DeviceId" TEXT NULL,
+  "Platform" VARCHAR(20) NULL,
+  "CreatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "UpdatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS "IDX_tbl_pushToken_UserId" ON "tbl_pushToken" ("UserId");
