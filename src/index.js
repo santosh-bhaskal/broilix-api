@@ -2,6 +2,10 @@ import app from "./app.js";
 import config from "./core/config/env.config.js";
 import connectDB, { disconnectDB } from "./core/database/dbConnect.js";
 import logger from "./core/utils/logger.js";
+import {
+  startDailyReminderScheduler,
+  stopDailyReminderScheduler,
+} from "./modules/notifications/dailyReminder.scheduler.js";
 
 const startServer = async () => {
   try {
@@ -10,10 +14,12 @@ const startServer = async () => {
 
     const server = app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT} in ${config.nodeEnv} mode`);
+      startDailyReminderScheduler();
     });
 
     const shutdown = async (signal) => {
       logger.info(`Received ${signal}. Closing HTTP server...`);
+      stopDailyReminderScheduler();
 
       server.close(async () => {
         logger.info("HTTP server closed.");
