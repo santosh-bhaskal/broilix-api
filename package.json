@@ -9,6 +9,7 @@
     "start": "node src/index.js",
     "migrate": "node migrations/run_redesign_migration.js",
     "migrate:data": "node migrations/data_migration.js",
+    "migrate:clean": "node migrations/data_cleansing.js",
     "test": "echo \"No test specified\" && exit 0"
   },
   "keywords": [
