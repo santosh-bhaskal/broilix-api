@@ -1,6 +1,7 @@
 import { AppDataSource } from "../../core/database/dbConnect.js";
 import { BATCH_STATUS } from "../../core/constants/constants.js";
 import ApiError from "../../core/utils/ApiError.js";
+import { sendToUser } from "../notifications/notification.service.js";
 
 const getMasterRepo = () => AppDataSource.getRepository("StockOutMaster");
 const getEntryRepo = () => AppDataSource.getRepository("StockOutEntry");
@@ -129,6 +130,15 @@ export const finalizeMaster = async (idParam, body) => {
   master.avgWeight = body.avgWeight ?? body.AvgWeight ?? master.avgWeight;
 
   await masterRepo.save(master);
+
+  const batch = await getBatchRepo().findOne({ where: { id: master.batchId } });
+  if (batch?.userId) {
+    void sendToUser(batch.userId, {
+      title: `Dispatch #${master.stockOutNo} Finalized`,
+      body: `${master.totalBirds} birds · ${master.totalWeight} kg total weight`,
+      data: { type: "stockout", masterId: master.id, batchId: master.batchId },
+    }).catch(() => {});
+  }
 
   return "Master finalized!";
 };

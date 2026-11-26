@@ -11,7 +11,7 @@ export const unregisterPushTokenSchema = Joi.object({
 });
 
 export const sendTestNotificationSchema = Joi.object({
-  title: Joi.string().trim().max(200).default("Poultry Management"),
+  title: Joi.string().trim().max(200).default("Broilix"),
   body: Joi.string().trim().max(1000).required(),
   data: Joi.object().unknown(true).default({}),
 });

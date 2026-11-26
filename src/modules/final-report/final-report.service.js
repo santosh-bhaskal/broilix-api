@@ -2,6 +2,7 @@ import { AppDataSource } from "../../core/database/dbConnect.js";
 import { BATCH_STATUS } from "../../core/constants/constants.js";
 import { normalizeToUtc } from "../../core/utils/dateHelper.js";
 import ApiError from "../../core/utils/ApiError.js";
+import { sendToUser } from "../notifications/notification.service.js";
 import { In, IsNull } from "typeorm";
 
 const getReportRepo = () => AppDataSource.getRepository("FinalReport");
@@ -219,6 +220,14 @@ export const createReport = async (body, userId = null) => {
   activeBatch.status = BATCH_STATUS.COMPLETED;
   activeBatch.endDate = record.endDate || new Date();
   await batchRepo.save(activeBatch);
+
+  if (activeBatch.userId) {
+    void sendToUser(activeBatch.userId, {
+      title: `Batch #${activeBatch.batchNo} Settled`,
+      body: `${record.totalSoldBirds} birds sold · Net payable ₹${Number(record.totalAmountPayable || 0).toLocaleString()}`,
+      data: { type: "final_report", reportId: record.id, batchId: activeBatch.id },
+    }).catch(() => {});
+  }
 
   return {
     message: "Final report created successfully and batch marked as completed.",

@@ -2,6 +2,7 @@ import { AppDataSource } from "../../core/database/dbConnect.js";
 import { BATCH_STATUS } from "../../core/constants/constants.js";
 import { normalizeToUtc } from "../../core/utils/dateHelper.js";
 import ApiError from "../../core/utils/ApiError.js";
+import { sendToUser } from "../notifications/notification.service.js";
 
 const getDailyRepo = () => AppDataSource.getRepository("DailyRecord");
 const getBatchRepo = () => AppDataSource.getRepository("Batch");
@@ -120,6 +121,14 @@ export const createDailyRecord = async (body, userId = null) => {
   });
 
   await dailyRepo.save(record);
+
+  if (activeBatch.userId && Number(mortalityCount) >= 10) {
+    void sendToUser(activeBatch.userId, {
+      title: `Elevated Mortality Alert (Day ${birdAgeInDays})`,
+      body: `${mortalityCount} birds recorded in Batch #${activeBatch.batchNo}. Check shed ventilation & health.`,
+      data: { type: "mortality_alert", batchId, recordId: record.id },
+    }).catch(() => {});
+  }
 
   return {
     status: 200,

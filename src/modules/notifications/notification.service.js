@@ -40,6 +40,7 @@ export const sendToUser = async (userId, notification) => {
   const messages = validRecords.map(({ token }) => ({
     to: token,
     sound: "default",
+    channelId: "default",
     title: notification.title,
     body: notification.body,
     data: notification.data || {},
