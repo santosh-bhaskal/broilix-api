@@ -9,19 +9,11 @@ const getFeedRepo = () => AppDataSource.getRepository("FeedInventory");
 export const getDashboardData = async (userId = null) => {
   const batchRepo = getBatchRepo();
 
-  // 1. Try to find active ongoing batch for this specific user
+  // Only find active ongoing batch for this specific user
   let latestBatch = null;
   if (userId) {
     latestBatch = await batchRepo.findOne({
       where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
-      order: { id: "DESC" },
-    });
-  }
-
-  // 2. Fallback to active ongoing batch where userId is null (shared/legacy batches)
-  if (!latestBatch) {
-    latestBatch = await batchRepo.findOne({
-      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
       order: { id: "DESC" },
     });
   }

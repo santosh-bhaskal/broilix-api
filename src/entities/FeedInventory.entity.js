@@ -29,18 +29,35 @@ export const FeedInventoryEntity = new EntitySchema({
     driverName: {
       name: "DriverName",
       type: "text",
+      nullable: true,
     },
     driverPhoneNumber: {
       name: "DriverPhoneNumber",
       type: "text",
+      nullable: true,
     },
     isDeleted: {
       name: "IsDeleted",
       type: "boolean",
-      nullable: true,
       default: false,
     },
+    createdAt: {
+      name: "CreatedAt",
+      type: "timestamptz",
+      createDate: true,
+    },
+    updatedAt: {
+      name: "UpdatedAt",
+      type: "timestamptz",
+      updateDate: true,
+    },
   },
+  indices: [
+    {
+      name: "IDX_feed_batch_date",
+      columns: ["batchId", "date"],
+    },
+  ],
   relations: {
     batch: {
       type: "many-to-one",

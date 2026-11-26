@@ -25,18 +25,35 @@ export const DailyRecordEntity = new EntitySchema({
     feedConsumedBags: {
       name: "FeedConsumedBags",
       type: "int",
+      default: 0,
     },
     mortalityCount: {
       name: "MortalityCount",
       type: "int",
+      default: 0,
     },
     isDeleted: {
       name: "IsDeleted",
       type: "boolean",
-      nullable: true,
       default: false,
     },
+    createdAt: {
+      name: "CreatedAt",
+      type: "timestamptz",
+      createDate: true,
+    },
+    updatedAt: {
+      name: "UpdatedAt",
+      type: "timestamptz",
+      updateDate: true,
+    },
   },
+  indices: [
+    {
+      name: "IDX_daily_batch_date",
+      columns: ["batchId", "date"],
+    },
+  ],
   relations: {
     batch: {
       type: "many-to-one",

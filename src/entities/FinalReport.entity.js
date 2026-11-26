@@ -13,7 +13,6 @@ export const FinalReportEntity = new EntitySchema({
     batchId: {
       name: "BatchId",
       type: "int",
-      unique: true,
     },
     startDate: {
       name: "StartDate",
@@ -30,10 +29,14 @@ export const FinalReportEntity = new EntitySchema({
     birdRate: {
       name: "BirdRate",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     birdCost: {
       name: "BirdCost",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     totalBags: {
       name: "TotalBags",
@@ -42,14 +45,20 @@ export const FinalReportEntity = new EntitySchema({
     totalFeedKg: {
       name: "TotalFeedKg",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     feedRate: {
       name: "FeedRate",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     feedCost: {
       name: "FeedCost",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     totalSoldBirds: {
       name: "TotalSoldBirds",
@@ -58,61 +67,105 @@ export const FinalReportEntity = new EntitySchema({
     totalBirdsWeight: {
       name: "TotalBirdsWeight",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     avgBodyWeight: {
       name: "AvgBodyWeight",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     chicksCost: {
       name: "ChicksCost",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     medicineCost: {
       name: "MedicineCost",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     adminCost: {
       name: "AdminCost",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     grossProductionCost: {
       name: "GrossProductionCost",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     netCostPerKg: {
       name: "NetCostPerKg",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     stdCostPerKg: {
       name: "StdCostPerKg",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     rearingChargesStd: {
       name: "RearingChargesStd",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     productionCostIncentive: {
       name: "ProductionCostIncentive",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     rearingChargesPerBird: {
       name: "RearingChargesPerBird",
       type: "numeric",
+      precision: 10,
+      scale: 2,
     },
     totalRearingCharges: {
       name: "TotalRearingCharges",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     totalAmountPayable: {
       name: "TotalAmountPayable",
       type: "numeric",
+      precision: 12,
+      scale: 2,
     },
     isDeleted: {
       name: "IsDeleted",
       type: "boolean",
       default: false,
     },
+    createdAt: {
+      name: "CreatedAt",
+      type: "timestamptz",
+      createDate: true,
+    },
+    updatedAt: {
+      name: "UpdatedAt",
+      type: "timestamptz",
+      updateDate: true,
+    },
   },
+  indices: [
+    {
+      name: "UQ_finalReport_batch_active",
+      columns: ["batchId"],
+      unique: true,
+      where: '"IsDeleted" = false',
+    },
+  ],
   relations: {
     batch: {
       type: "one-to-one",

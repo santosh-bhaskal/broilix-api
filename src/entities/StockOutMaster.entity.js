@@ -22,6 +22,11 @@ export const StockOutMasterEntity = new EntitySchema({
       name: "StockOutNo",
       type: "int",
     },
+    status: {
+      name: "Status",
+      type: "smallint",
+      default: 0,
+    },
     totalBirds: {
       name: "TotalBirds",
       type: "int",
@@ -30,11 +35,15 @@ export const StockOutMasterEntity = new EntitySchema({
     totalWeight: {
       name: "TotalWeight",
       type: "numeric",
+      precision: 10,
+      scale: 2,
       default: 0,
     },
     avgWeight: {
       name: "AvgWeight",
       type: "numeric",
+      precision: 10,
+      scale: 2,
       default: 0,
     },
     isDeleted: {
@@ -42,13 +51,29 @@ export const StockOutMasterEntity = new EntitySchema({
       type: "boolean",
       default: false,
     },
+    createdAt: {
+      name: "CreatedAt",
+      type: "timestamptz",
+      createDate: true,
+    },
+    updatedAt: {
+      name: "UpdatedAt",
+      type: "timestamptz",
+      updateDate: true,
+    },
   },
+  indices: [
+    {
+      name: "IDX_stockout_batch",
+      columns: ["batchId", "isDeleted"],
+    },
+  ],
   relations: {
     batch: {
       type: "many-to-one",
       target: "Batch",
       joinColumn: { name: "BatchId" },
-      onDelete: "RESTRICT",
+      onDelete: "CASCADE",
     },
     entries: {
       type: "one-to-many",

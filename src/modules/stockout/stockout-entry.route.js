@@ -1,4 +1,5 @@
 import express from "express";
+import { authenticate } from "../../core/middlewares/auth.middleware.js";
 import validate from "../../core/middlewares/validate.middleware.js";
 import * as stockoutValidation from "./stockout.validation.js";
 import * as stockoutController from "./stockout.controller.js";
@@ -6,6 +7,8 @@ import * as stockoutController from "./stockout.controller.js";
 export const routePrefix = "/stockout/entry";
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.post("/", validate(stockoutValidation.createEntrySchema), stockoutController.addEntry);
 router.get("/:masterId", stockoutController.getEntriesByMaster);

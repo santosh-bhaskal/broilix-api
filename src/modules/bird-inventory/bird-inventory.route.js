@@ -1,4 +1,5 @@
 import express from "express";
+import { authenticate } from "../../core/middlewares/auth.middleware.js";
 import validate from "../../core/middlewares/validate.middleware.js";
 import * as birdValidation from "./bird-inventory.validation.js";
 import * as birdController from "./bird-inventory.controller.js";
@@ -6,6 +7,8 @@ import * as birdController from "./bird-inventory.controller.js";
 export const routePrefix = "/BirdsInventory";
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.get("/", birdController.getAll);
 router.get("/:id", birdController.getByBatch);

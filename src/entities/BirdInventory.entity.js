@@ -61,10 +61,25 @@ export const BirdInventoryEntity = new EntitySchema({
     isDeleted: {
       name: "IsDeleted",
       type: "boolean",
-      nullable: true,
       default: false,
     },
+    createdAt: {
+      name: "CreatedAt",
+      type: "timestamptz",
+      createDate: true,
+    },
+    updatedAt: {
+      name: "UpdatedAt",
+      type: "timestamptz",
+      updateDate: true,
+    },
   },
+  indices: [
+    {
+      name: "IDX_birdInventory_batch",
+      columns: ["batchId", "isDeleted"],
+    },
+  ],
   relations: {
     batch: {
       type: "one-to-one",

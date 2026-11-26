@@ -1,4 +1,5 @@
 import express from "express";
+import { authenticate } from "../../core/middlewares/auth.middleware.js";
 import validate from "../../core/middlewares/validate.middleware.js";
 import * as feedValidation from "./feed-inventory.validation.js";
 import * as feedController from "./feed-inventory.controller.js";
@@ -6,6 +7,8 @@ import * as feedController from "./feed-inventory.controller.js";
 export const routePrefix = "/FeedInventory";
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.get("/", feedController.getAll);
 router.post("/", validate(feedValidation.createFeedInventorySchema), feedController.create);

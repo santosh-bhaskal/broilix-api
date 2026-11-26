@@ -14,6 +14,18 @@ export const BatchEntity = new EntitySchema({
       name: "BatchNo",
       type: "int",
     },
+    breed: {
+      name: "Breed",
+      type: "varchar",
+      length: 80,
+      nullable: true,
+      default: "Broiler",
+    },
+    targetCycleDays: {
+      name: "TargetCycleDays",
+      type: "int",
+      default: 42,
+    },
     startDate: {
       name: "StartDate",
       type: "timestamptz",
@@ -36,16 +48,42 @@ export const BatchEntity = new EntitySchema({
     userId: {
       name: "UserId",
       type: "int",
-      nullable: true,
+    },
+    createdAt: {
+      name: "CreatedAt",
+      type: "timestamptz",
+      createDate: true,
+    },
+    updatedAt: {
+      name: "UpdatedAt",
+      type: "timestamptz",
+      updateDate: true,
     },
   },
+  indices: [
+    {
+      name: "IDX_batch_user_status",
+      columns: ["userId", "status", "isDeleted"],
+    },
+    {
+      name: "UQ_batch_user_batchNo",
+      columns: ["userId", "batchNo"],
+      unique: true,
+      where: '"IsDeleted" = false',
+    },
+    {
+      name: "UQ_batch_one_ongoing_per_user",
+      columns: ["userId"],
+      unique: true,
+      where: '"Status" = 0 AND "IsDeleted" = false',
+    },
+  ],
   relations: {
     user: {
       type: "many-to-one",
       target: "User",
       joinColumn: { name: "UserId" },
       onDelete: "CASCADE",
-      nullable: true,
     },
     birdInventory: {
       type: "one-to-one",

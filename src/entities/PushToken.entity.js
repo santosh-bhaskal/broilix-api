@@ -13,6 +13,12 @@ export const PushTokenEntity = new EntitySchema({
     createdAt: { name: "CreatedAt", type: "timestamptz", createDate: true },
     updatedAt: { name: "UpdatedAt", type: "timestamptz", updateDate: true },
   },
+  indices: [
+    {
+      name: "IDX_pushToken_user",
+      columns: ["userId"],
+    },
+  ],
   relations: {
     user: { type: "many-to-one", target: "User", joinColumn: { name: "UserId" }, onDelete: "CASCADE" },
   },

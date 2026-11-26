@@ -17,12 +17,6 @@ export const getAllDailyRecords = async (userId = null) => {
       order: { id: "DESC" },
     });
   }
-  if (!activeBatch) {
-    activeBatch = await batchRepo.findOne({
-      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-      order: { id: "DESC" },
-    });
-  }
 
   if (!activeBatch) {
     return {
@@ -67,12 +61,6 @@ export const createDailyRecord = async (body, userId = null) => {
   if (userId) {
     activeBatch = await batchRepo.findOne({
       where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
-      order: { id: "DESC" },
-    });
-  }
-  if (!activeBatch) {
-    activeBatch = await batchRepo.findOne({
-      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
       order: { id: "DESC" },
     });
   }

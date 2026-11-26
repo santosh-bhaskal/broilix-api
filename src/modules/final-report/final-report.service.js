@@ -13,7 +13,7 @@ export const getAllReports = async (userId = null) => {
   let reports = [];
   if (userId) {
     const userBatches = await batchRepo.find({
-      where: [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }],
+      where: { userId, isDeleted: false },
     });
     const batchIds = userBatches.map((b) => b.id);
     if (batchIds.length > 0) {
@@ -22,11 +22,6 @@ export const getAllReports = async (userId = null) => {
         order: { startDate: "DESC", id: "DESC" },
       });
     }
-  } else {
-    reports = await reportRepo.find({
-      where: { isDeleted: false },
-      order: { startDate: "DESC", id: "DESC" },
-    });
   }
 
   return {
@@ -57,26 +52,13 @@ export const getPrepareData = async (userId = null, batchIdParam = null) => {
       order: { id: "DESC" },
     });
   }
-  if (!activeBatch) {
+
+  // Fallback: If no ONGOING batch, retrieve the most recent batch for this user
+  if (!activeBatch && userId) {
     activeBatch = await batchRepo.findOne({
-      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+      where: { userId, isDeleted: false },
       order: { id: "DESC" },
     });
-  }
-
-  // Fallback: If no ONGOING batch, retrieve the most recent active batch
-  if (!activeBatch) {
-    if (userId) {
-      activeBatch = await batchRepo.findOne({
-        where: [{ userId, isDeleted: false }, { isDeleted: false, userId: IsNull() }],
-        order: { id: "DESC" },
-      });
-    } else {
-      activeBatch = await batchRepo.findOne({
-        where: { isDeleted: false },
-        order: { id: "DESC" },
-      });
-    }
   }
 
   if (!activeBatch) {
@@ -197,6 +179,13 @@ export const createReport = async (body, userId = null) => {
 
   const batchId = activeBatch.id;
   const reportRepo = getReportRepo();
+
+  const existingReport = await reportRepo.findOne({
+    where: { batchId, isDeleted: false },
+  });
+  if (existingReport) {
+    throw ApiError.badRequest("A final settlement report already exists for this batch.");
+  }
 
   const record = reportRepo.create({
     batchId,

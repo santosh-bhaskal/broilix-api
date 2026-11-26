@@ -17,12 +17,6 @@ export const getAllMasters = async (userId = null) => {
       order: { id: "DESC" },
     });
   }
-  if (!activeBatch) {
-    activeBatch = await batchRepo.findOne({
-      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-      order: { id: "DESC" },
-    });
-  }
 
   if (!activeBatch) {
     return {
@@ -70,12 +64,6 @@ export const createMaster = async (userId = null, body = {}) => {
       order: { id: "DESC" },
     });
   }
-  if (!activeBatch) {
-    activeBatch = await batchRepo.findOne({
-      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
-      order: { id: "DESC" },
-    });
-  }
 
   if (!activeBatch) {
     throw ApiError.badRequest("No active batch found.");
@@ -96,6 +84,7 @@ export const createMaster = async (userId = null, body = {}) => {
     date: isNaN(parsedDate.getTime()) ? new Date() : parsedDate,
     batchId: activeBatch.id,
     stockOutNo: nextStockOutNo,
+    status: 0,
     totalBirds: 0,
     totalWeight: 0,
     avgWeight: 0,
@@ -134,6 +123,7 @@ export const finalizeMaster = async (idParam, body) => {
     }
   }
 
+  master.status = 1;
   master.totalBirds = body.totalBirds ?? body.TotalBirds ?? master.totalBirds;
   master.totalWeight = body.totalWeight ?? body.TotalWeight ?? master.totalWeight;
   master.avgWeight = body.avgWeight ?? body.AvgWeight ?? master.avgWeight;

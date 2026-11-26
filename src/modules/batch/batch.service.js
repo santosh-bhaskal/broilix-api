@@ -54,18 +54,12 @@ export const createBatch = async (body, userId = null) => {
 export const getActiveBatch = async (userId = null) => {
   const batchRepo = getBatchRepo();
 
-  // Try to find user's active batch first
-  if (userId) {
-    const userBatch = await batchRepo.findOne({
-      where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
-      order: { id: "DESC" },
-    });
-    if (userBatch) return userBatch;
+  if (!userId) {
+    throw ApiError.notFound("No active batch found.");
   }
 
-  // Fallback to active batch where userId is null
   const batch = await batchRepo.findOne({
-    where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
+    where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
     order: { id: "DESC" },
   });
 
