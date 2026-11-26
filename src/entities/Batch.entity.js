@@ -105,6 +105,11 @@ export const BatchEntity = new EntitySchema({
       target: "StockOutMaster",
       inverseSide: "batch",
     },
+    finalReport: {
+      type: "one-to-one",
+      target: "FinalReport",
+      inverseSide: "batch",
+    },
   },
 });
 

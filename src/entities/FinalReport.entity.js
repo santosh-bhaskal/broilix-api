@@ -171,6 +171,7 @@ export const FinalReportEntity = new EntitySchema({
       type: "one-to-one",
       target: "Batch",
       joinColumn: { name: "BatchId" },
+      inverseSide: "finalReport",
       onDelete: "RESTRICT",
     },
   },

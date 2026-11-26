@@ -19,6 +19,7 @@ export const getAllReports = async (userId = null) => {
     if (batchIds.length > 0) {
       reports = await reportRepo.find({
         where: { batchId: In(batchIds), isDeleted: false },
+        relations: { batch: true },
         order: { startDate: "DESC", id: "DESC" },
       });
     }
@@ -35,12 +36,13 @@ export const getPrepareData = async (userId = null, batchIdParam = null) => {
   let activeBatch = null;
 
   if (batchIdParam) {
+    const baseWhere = userId ? { userId, isDeleted: false } : { isDeleted: false };
     activeBatch = await batchRepo.findOne({
-      where: { id: Number(batchIdParam), isDeleted: false },
+      where: { ...baseWhere, id: Number(batchIdParam) },
     });
     if (!activeBatch) {
       activeBatch = await batchRepo.findOne({
-        where: { batchNo: Number(batchIdParam), isDeleted: false },
+        where: { ...baseWhere, batchNo: Number(batchIdParam) },
         order: { id: "DESC" },
       });
     }
@@ -135,6 +137,7 @@ export const getReportById = async (idParam) => {
   const reportRepo = getReportRepo();
   const report = await reportRepo.findOne({
     where: { id, isDeleted: false },
+    relations: { batch: true },
   });
 
   return {
@@ -149,12 +152,13 @@ export const createReport = async (body, userId = null) => {
 
   const requestedBatchId = body.batchId ?? body.BatchId;
   if (requestedBatchId) {
+    const baseWhere = userId ? { userId, isDeleted: false } : { isDeleted: false };
     activeBatch = await batchRepo.findOne({
-      where: { id: Number(requestedBatchId), isDeleted: false },
+      where: { ...baseWhere, id: Number(requestedBatchId) },
     });
     if (!activeBatch) {
       activeBatch = await batchRepo.findOne({
-        where: { batchNo: Number(requestedBatchId), isDeleted: false },
+        where: { ...baseWhere, batchNo: Number(requestedBatchId) },
         order: { id: "DESC" },
       });
     }
@@ -163,12 +167,6 @@ export const createReport = async (body, userId = null) => {
   if (!activeBatch && userId) {
     activeBatch = await batchRepo.findOne({
       where: { userId, status: BATCH_STATUS.ONGOING, isDeleted: false },
-      order: { id: "DESC" },
-    });
-  }
-  if (!activeBatch) {
-    activeBatch = await batchRepo.findOne({
-      where: { status: BATCH_STATUS.ONGOING, isDeleted: false },
       order: { id: "DESC" },
     });
   }
